@@ -1,6 +1,6 @@
 <script src='index.js'></script>
 <script>
-var w=256, h=256
+var w=207, h=253
 gen = function(){
   var arr = PoissonSolver.generate2DArray(w, h)
   for(var i=0;i<w;i++)for(var j=0;j<h;j++){
@@ -11,7 +11,7 @@ gen = function(){
   var mask = PoissonSolver.generate2DArray(w,h)
   for(var i=0;i<w;i++)for(var j=0;j<h;j++){
     var a=-((i-w/2)*(i-w/2)+(j-h/2)*(j-h/2)-w*h/8)/w
-    mask[i][j] = a<0?0:a>1?1:a
+    mask[i][j] = a>0?1:0
   }
   var f = PoissonSolver.generate2DArray(w,h)
   for(var i=0;i<w;i++)for(var j=0;j<h;j++){
