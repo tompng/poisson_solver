@@ -64,7 +64,7 @@ PoissonSolver.prototype = {
     var mask2 = this.buffer.mask(level+1, w2, h2)
     for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
       f2[i][j] = tmp[2*i][2*j] + tmp[2*i+1][2*j] + tmp[2*i][2*j+1] + tmp[2*i+1][2*j+1]
-      mask2[i][j] = (mask[2*i][2*j] + mask[2*i+1][2*j] + mask[2*i][2*j+1] + mask[2*i+1][2*j+1]) / 4
+      mask2[i][j] = mask[2*i][2*j] && mask[2*i+1][2*j] && mask[2*i][2*j+1] && mask[2*i+1][2*j+1] ? 1 : 0
       out2[i][j] = 0
     }
     this._solve(f2, mask2, out2, level + 1)
