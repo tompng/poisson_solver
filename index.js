@@ -4,19 +4,11 @@ function PoissonSolver(w, h) {
   this.w = w
   this.h = h
   this.out = PoissonSolver.generate2DArray(w, h)
-  var levelBuffers = []
-  function bufgen(key){
-    return function(level, w, h){
-      if(!levelBuffers[level])levelBuffers[level] = {}
-      if(!levelBuffers[level][key])levelBuffers[level][key] = PoissonSolver.generate2DArray(w, h)
-      return levelBuffers[level][key]
-    }
-  }
-  this.buffer = {
-    mask: bufgen('mask'),
-    tmp: bufgen('tmp'),
-    out: bufgen('out'),
-    f: bufgen('f')
+  var buffers = {}
+  this.buffer = function(type, w, h){
+    var key = [type, w, h].join('/')
+    if (!buffers[key]) buffers[key] = PoissonSolver.generate2DArray(w, h)
+    return buffers[key]
   }
 }
 PoissonSolver.generate2DArray = function(w, h) {
@@ -35,7 +27,7 @@ PoissonSolver.prototype = {
       for (i=0; i<w; i++) for (j=0; j<h; j++) out[i][j] = 0
     }
     if (iterate === undefined) iterate = 4
-    for (i=0; i<iterate; i++) this._solve(f, mask || this.buffer.mask(0, w, h), out, 0)
+    for (i=0; i<iterate; i++) this._solve(f, mask || this.buffer('mask', w, h), out, 0)
     return out
   },
   _solve: function(f, mask, out, level) {
@@ -43,7 +35,7 @@ PoissonSolver.prototype = {
     var i, j, n
     var w = f.length
     var h = f[0].length
-    var tmp = this.buffer.tmp(level, w, h)
+    var tmp = this.buffer('tmp', w, h)
     function smooth(){
       var i, j, dst
       for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) {
@@ -59,9 +51,9 @@ PoissonSolver.prototype = {
     }
     var w2 = Math.floor(w / 2)
     var h2 = Math.floor(h / 2)
-    var f2 = this.buffer.f(level+1, w2, h2)
-    var out2 = this.buffer.out(level+1, w2, h2)
-    var mask2 = this.buffer.mask(level+1, w2, h2)
+    var f2 = this.buffer('f', w2, h2)
+    var out2 = this.buffer('out', w2, h2)
+    var mask2 = this.buffer('mask', w2, h2)
     for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
       f2[i][j] = tmp[2*i][2*j] + tmp[2*i+1][2*j] + tmp[2*i][2*j+1] + tmp[2*i+1][2*j+1]
       mask2[i][j] = mask[2*i][2*j] && mask[2*i+1][2*j] && mask[2*i][2*j+1] && mask[2*i+1][2*j+1] ? 1 : 0
