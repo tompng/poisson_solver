@@ -10,8 +10,8 @@ gen = function(){
   }
   var mask = PoissonSolver.generate2DArray(w,h)
   for(var i=0;i<w;i++)for(var j=0;j<h;j++){
-    var a=-((i-w/2)*(i-w/2)+(j-h/2)*(j-h/2)-w*h/8)/w
-    mask[i][j] = a>0?1:0
+    var a=Math.pow(i-(w-1)/2,2)+Math.pow(j-(h-1)/2,2)-w*h/8
+    mask[i][j] = a>0?0:1
   }
   var f = PoissonSolver.generate2DArray(w,h)
   for(var i=0;i<w;i++)for(var j=0;j<h;j++){
@@ -54,8 +54,7 @@ onload=function(){
   fuga = new PoissonSolver(w, h)
   show(hoge.a)
   console.error(err(hoge.a, hoge.initial))
-  show(hoge.initial)
-  a2 = fuga.solve(hoge.f, hoge.mask, hoge.initial, 1)
+  a2 = hoge.initial
   show(a2)
   console.error(err(hoge.a, a2))
   for(var i=0;i<10;i++){

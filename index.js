@@ -71,14 +71,16 @@ function PoissonSolver(w, h){
     for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
       f2[i][j] = tmp[2*i][2*j] + tmp[2*i+1][2*j] + tmp[2*i][2*j+1] + tmp[2*i+1][2*j+1]
       mask2[i][j] = (mask[2*i][2*j] + mask[2*i+1][2*j] + mask[2*i][2*j+1] + mask[2*i+1][2*j+1]) / 4
+      out2[i][j] = 0
     }
     _solve2D(f2, mask2, out2, level + 1, buf)
     _solve2D(f2, mask2, out2, level + 1, buf)
     for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
-      out[2*i][2*j] += mask[2*i][2*j]*out2[i][j]
-      out[2*i+1][2*j] += mask[2*i+1][2*j]*out2[i][j]
-      out[2*i][2*j+1] += mask[2*i][2*j+1]*out2[i][j]
-      out[2*i+1][2*j+1] += mask[2*i+1][2*j+1]*out2[i][j]
+      var o = out2[i][j]
+      out[2*i][2*j] += mask[2*i][2*j]*o
+      out[2*i+1][2*j] += mask[2*i+1][2*j]*o
+      out[2*i][2*j+1] += mask[2*i][2*j+1]*o
+      out[2*i+1][2*j+1] += mask[2*i+1][2*j+1]*o
     }
     smooth()
     smooth()
