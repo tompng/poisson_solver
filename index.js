@@ -18,10 +18,10 @@ PoissonSolver.generate2DArray = function(w, h) {
 }
 PoissonSolver.prototype = {
   solve: function(f, mask, out, iterate) {
-    var w = f.length
-    var h = f[0].length
+    if (!f) f = this._buffer('f', this.w, this.h)
+    var w = this.w
+    var h = this.h
     var i, j
-    if (w != this.w || h != this.h)throw 'wrong shape'
     if (!out) {
       out = this.out
       for (i=0; i<w; i++) for (j=0; j<h; j++) out[i][j] = 0
@@ -30,6 +30,9 @@ PoissonSolver.prototype = {
       mask = this._buffer('mask', w, h)
       for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) mask[i][j] = 1
     }
+    ;[f, mask, out].forEach((arr)=>{
+      if(arr.length !== w || arr[0].length !== h) throw 'wrong shape'
+    })
     if (iterate === undefined) iterate = 4
     for (i=0; i<iterate; i++) this._solve(f, mask, out)
     return out
