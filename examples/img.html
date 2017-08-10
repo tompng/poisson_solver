@@ -1,103 +1,22 @@
 <script src='../index.js'></script>
+<script src='util.js'></script>
 <script>
-var $ = document.querySelector.bind(document)
-function img2data(img, scale){
-  let c=document.createElement('canvas')
-  c.width=Math.round(img.naturalWidth*(scale||1))
-  c.height=Math.round(img.naturalHeight*(scale||1))
-  let g=c.getContext('2d')
-  g.drawImage(img,0,0,c.width,c.height)
-  return g.getImageData(0,0,c.width,c.height)
-}
-const rgbaorder = ['r','g','b','a']
-function data2colarray(data){
-  let w=data.width, h=data.height
-  let col={}
-  rgbaorder.forEach((c)=>col[c]=PoissonSolver.generate2DArray(w,h))
-  for(let x=0;x<w;x++)for(let y=0;y<h;y++){
-    let i=4*(y*w+x)
-    rgbaorder.forEach((c,j)=>col[c][x][y]=data.data[i+j]/0xff)
-  }
-  col.w=w;col.h=h;
-  return col
-}
-function colarraymonotone(col){
-  for(let x=0;x<col.w;x++)for(let y=0;y<col.h;y++){
-    let gray = (col.r[x][y]+col.g[x][y]+col.b[x][y])/3
-    col.r[x][y]=col.g[x][y]=col.b[x][y]=gray
-  }
-}
-function colarray2canvas(col){
-  let c=document.createElement('canvas')
-  let clamp = (x)=>x<0?0:x>1?1:x
-  c.width=col.w;c.height=col.h
-  let g=c.getContext('2d')
-  let data=g.getImageData(0,0,col.w,col.h)
-  for(let x=0;x<col.w;x++)for(let y=0;y<col.h;y++){
-    let i=4*(y*col.w+x)
-    rgbaorder.forEach((c,j)=>data.data[i+j]=clamp(col[c][x][y])*0xff)
-  }
-  g.putImageData(data,0,0)
-  return c
-}
-function lapfilter(arr){
-  let w=arr.length,h=arr[0].length
-  let out=PoissonSolver.generate2DArray(w,h)
-  for(let x=1;x<w-1;x++)for(let y=1;y<h-1;y++){
-    out[x][y]=arr[x][y-1]+arr[x][y+1]+arr[x-1][y]+arr[x+1][y]-4*arr[x][y]
-  }
-  return out
-}
-
 onload=function(){
-  try{
-    imga = data2colarray(img2data($('[src="a.png"]')))
-    imgb = data2colarray(img2data($('[src="b.png"]')))
-    imgc = data2colarray(img2data($('[src="c.png"]')))
-  }catch(e){alert('`httpserver .` and open http://127.0.0.1:8080')}
-  let w=imga.w, h=imga.h
-  solver = new PoissonSolver(w,h)
-  solver.solve(lapfilter(imgb.r), imgc.a, imga.r)
-  solver.solve(lapfilter(imgb.g), imgc.a, imga.g)
-  solver.solve(lapfilter(imgb.b), imgc.a, imga.b)
-  canvas = colarray2canvas(imga)
+  img = data2colarray(img2data($('#img')))
+  mask = data2colarray(img2data($('#mask')))
+  let lap={r: lapfilter(img.r), g: lapfilter(img.g), b: lapfilter(img.b)}
+  let solver = new PoissonSolver(img.w,img.h)
+  colarraymonotone(img)
+  solver.solve(lap.r, mask.a, img.r)
+  solver.solve(lap.g, mask.a, img.g)
+  solver.solve(lap.b, mask.a, img.b)
+  let canvas = colarray2canvas(img)
   document.body.appendChild(canvas)
-
-  img1 = data2colarray(img2data($('[src="img1.jpg"]'),0.25))
-  img1mask = data2colarray(img2data($('[src="img1mask.png"]'),0.25))
-  img2 = data2colarray(img2data($('[src="img2.jpg"]'),0.25))
-  img2mask = data2colarray(img2data($('[src="img2mask.png"]'),0.25))
-
-  ;[{img: img1, mask: img1mask}, {img: img2, mask: img2mask}].forEach((data)=>{
-    let lap={r: lapfilter(data.img.r), g: lapfilter(data.img.g), b: lapfilter(data.img.b)}
-    let solver = new PoissonSolver(data.img.w,data.img.h)
-    colarraymonotone(data.img)
-    solver.solve(lap.g, data.mask.a, data.img.r)
-    solver.solve(lap.g, data.mask.a, data.img.g)
-    solver.solve(lap.r, data.mask.a, data.img.b)
-
-    // for(let x=0;x<data.img.w;x++)for(let y=0;y<data.img.h;y++){
-    //   let rr=data.img.r[x][y], gg=data.img.g[x][y], bb=data.img.b[x][y]
-    //   if(!data.mask.a[x][y])continue;
-    //   data.img.r[x][y]=gg
-    //   data.img.g[x][y]=gg
-    //   data.img.b[x][y]=rr
-    // }
-
-    let canvas = colarray2canvas(data.img)
-    document.body.appendChild(canvas)
-  })
 }
 </script>
 <style>
 img{max-width: 256px;}
 canvas{max-width: 1024px;}
 </style>
-<img src='a.png'>
-<img src='b.png'>
-<img src='c.png'>
-
-<img src='img1.jpg'>
-<img src='img2.jpg'>
-<img src='img1mask.png'>
-<img src='img2mask.png'>
+<img src='img1.jpg' id='img'>
+<img src='img1mask.png' id='mask'>
