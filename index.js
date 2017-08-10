@@ -38,18 +38,18 @@ PoissonSolver.prototype = {
     var tmp = this.buffer('tmp', w, h)
     function smooth(){
       var i, j, dst
-      for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) {
+      for (i=0; i<w; i++) for (j=0; j<h; j++) {
         if (mask[i][j]) {
-          out[i][j] = (out[i-1][j] + out[i+1][j] + out[i][j-1] + out[i][j+1] - f[i][j]) / 4
+          out[i][j] = (out[(i+w-1)%w][j] + out[(i+1)%w][j] + out[i][(j+h-1)%h] + out[i][(j+1)%h] - f[i][j]) / 4
         }
       }
     }
     smooth()
     smooth()
     if(w < 4 || h < 4) return out
-    for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) {
+    for (i=0; i<w; i++) for (j=0; j<h; j++) {
       if (mask[i][j]) {
-        tmp[i][j] = f[i][j] - out[i-1][j] - out[i+1][j] - out[i][j-1] - out[i][j+1] + 4 * out[i][j]
+        tmp[i][j] = f[i][j] - out[(i+w-1)%w][j] - out[(i+1)%w][j] - out[i][(j+h-1)%h] - out[i][(j+1)%h] + 4 * out[i][j]
       } else {
         tmp[i][j] = 0
       }
@@ -66,12 +66,10 @@ PoissonSolver.prototype = {
     }
     this._solve(f2, mask2, out2, level + 1)
     this._solve(f2, mask2, out2, level + 1)
-    for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
-      var o = out2[i][j]
-      out[2*i][2*j] += mask[2*i][2*j]*o
-      out[2*i+1][2*j] += mask[2*i+1][2*j]*o
-      out[2*i][2*j+1] += mask[2*i][2*j+1]*o
-      out[2*i+1][2*j+1] += mask[2*i+1][2*j+1]*o
+    for (i=0; i<w; i++) for (j=0; j<h; j++) {
+      if (mask[i][j]) {
+        out[i][j] += out2[Math.floor(i/2)%w2][Math.floor(j/2)%h2]
+      }
     }
     smooth()
     smooth()
