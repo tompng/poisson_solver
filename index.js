@@ -39,15 +39,20 @@ PoissonSolver.prototype = {
     function smooth(){
       var i, j, dst
       for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) {
-        var dst = (out[i-1][j] + out[i+1][j] + out[i][j-1] + out[i][j+1] - f[i][j]) / 4
-        out[i][j] = out[i][j] + mask[i][j]*(dst - out[i][j])
+        if (mask[i][j]) {
+          out[i][j] = (out[i-1][j] + out[i+1][j] + out[i][j-1] + out[i][j+1] - f[i][j]) / 4
+        }
       }
     }
     smooth()
     smooth()
     if(w < 4 || h < 4) return out
     for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) {
-      tmp[i][j] = f[i][j] - out[i-1][j] - out[i+1][j] - out[i][j-1] - out[i][j+1] + 4 * out[i][j]
+      if (mask[i][j]) {
+        tmp[i][j] = f[i][j] - out[i-1][j] - out[i+1][j] - out[i][j-1] - out[i][j+1] + 4 * out[i][j]
+      } else {
+        tmp[i][j] = 0
+      }
     }
     var w2 = Math.floor(w / 2)
     var h2 = Math.floor(h / 2)
