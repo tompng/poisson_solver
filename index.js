@@ -5,7 +5,7 @@ function PoissonSolver(w, h) {
   this.h = h
   this.out = PoissonSolver.generate2DArray(w, h)
   var buffers = {}
-  this.buffer = function(type, w, h){
+  this._buffer = function(type, w, h){
     var key = [type, w, h].join('/')
     if (!buffers[key]) buffers[key] = PoissonSolver.generate2DArray(w, h)
     return buffers[key]
@@ -26,16 +26,20 @@ PoissonSolver.prototype = {
       out = this.out
       for (i=0; i<w; i++) for (j=0; j<h; j++) out[i][j] = 0
     }
+    if (!mask) {
+      mask = this._buffer('mask', w, h)
+      for (i=1; i<w-1; i++) for (j=1; j<h-1; j++) mask[i][j] = 1
+    }
     if (iterate === undefined) iterate = 4
-    for (i=0; i<iterate; i++) this._solve(f, mask || this.buffer('mask', w, h), out, 0)
+    for (i=0; i<iterate; i++) this._solve(f, mask, out)
     return out
   },
-  _solve: function(f, mask, out, level) {
+  _solve: function(f, mask, out) {
     if (f.length == 0) return out
     var i, j, n
     var w = f.length
     var h = f[0].length
-    var tmp = this.buffer('tmp', w, h)
+    var tmp = this._buffer('tmp', w, h)
     function smooth(){
       var i, j, dst
       for (i=0; i<w; i++) for (j=0; j<h; j++) {
@@ -56,16 +60,16 @@ PoissonSolver.prototype = {
     }
     var w2 = Math.floor(w / 2)
     var h2 = Math.floor(h / 2)
-    var f2 = this.buffer('f', w2, h2)
-    var out2 = this.buffer('out', w2, h2)
-    var mask2 = this.buffer('mask', w2, h2)
+    var f2 = this._buffer('f', w2, h2)
+    var out2 = this._buffer('out', w2, h2)
+    var mask2 = this._buffer('mask', w2, h2)
     for (i=0; i<w2; i++) for (j=0; j<h2; j++) {
       f2[i][j] = tmp[2*i][2*j] + tmp[2*i+1][2*j] + tmp[2*i][2*j+1] + tmp[2*i+1][2*j+1]
       mask2[i][j] = mask[2*i][2*j] && mask[2*i+1][2*j] && mask[2*i][2*j+1] && mask[2*i+1][2*j+1] ? 1 : 0
       out2[i][j] = 0
     }
-    this._solve(f2, mask2, out2, level + 1)
-    this._solve(f2, mask2, out2, level + 1)
+    this._solve(f2, mask2, out2)
+    this._solve(f2, mask2, out2)
     for (i=0; i<w; i++) for (j=0; j<h; j++) {
       if (mask[i][j]) {
         out[i][j] += out2[Math.floor(i/2)%w2][Math.floor(j/2)%h2]
