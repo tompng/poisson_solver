@@ -1,11 +1,25 @@
 # 2D Poisson Solver
 
+## package.json
 ```json
 "dependencies": {
     "poisson_solver" : "git://github.com/tompng/poisson_solver.git"
 }
 ```
 
+## how to use
+```js
+let PoissonSolver = require('./index')
+let solver = new PoissonSolver(w, h)
+let f = PoissonSolver.generate2DArray(w, h)
+let output = solver.solve(f, { mask: mask, out: out, iterate: 16, periodic: true })
+// if mask[x][y] == 1
+//   out[x-1][y]+out[x+1][y]+out[x][y-1]+out[x][y+1]-4*out[x][y] = f[x][y]
+// else
+//   out[x][y] not changed
+```
+
+## example
 ```js
 let PoissonSolver = require('./index')
 let w = 200, h = 300
@@ -16,18 +30,17 @@ for(let x=0; x<w; x++){
     f[x][y] = x<w/2 ? 0.01 : 0.02
   }
 }
-let out = solver.solve(f) // Δ(solver.out)=f (unless edge), solver.out[x][y]=0 (if edge)
+let out = solver.solve(f)
 
 let out2 = PoissonSolver.generate2DArray(w, h)
 let mask = PoissonSolver.generate2DArray(w, h)
 for(let x=0; x<w; x++){
   for(let y=0; y<h; y++){
-    out2[x][y] = 12.34 // initial value(boundary condition)
+    out2[x][y] = 12.34
     mask[x][y] = (x>w/4&&x<w*3/4&&y>h/4&&y<h*3/4) ? 1 : 0
   }
 }
-let iterate = 16
-solver.solve(f, {mask: mask, out: out2, iterate: iterate}) // Δout2=f (if mask[x][y]==1), out2 not changed (if mask[x][y]==0)
+solver.solve(f, {mask: mask, out: out2, iterate: 16})
 
 function laplacianTest(arr, x, y){
   return arr[x][y-1]+arr[x][y+1]+arr[x-1][y]+arr[x+1][y]-arr[x][y]*4
