@@ -57,7 +57,7 @@ onload=function(){
   show(a2)
   console.error(err(hoge.a, a2))
   for(var i=0;i<10;i++){
-    a2 = fuga.solve(hoge.f, hoge.mask, a2, 1)
+    a2 = fuga.solve(hoge.f, {mask: hoge.mask, out: a2, iterate: 1, periodic: false})
     show(a2)
     console.error(err(hoge.a, a2))
   }

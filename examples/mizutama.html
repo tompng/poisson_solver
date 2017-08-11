@@ -18,7 +18,7 @@ onload=function(){
         out[0][y]-=diff/2
         out[imgt.w-1][y]+=diff/2
       }
-      out=tsolver.solve(null, null, out)
+      out=tsolver.solve(null, { out: out })
       for(let x=0;x<imgt.w;x++)for(let y=0;y<imgt.h;y++){
         imgt[c][x][y]+=out[x][y]
       }
@@ -35,7 +35,7 @@ onload=function(){
       for(let x=0;x<w;x++)for(let y=0;y<h;y++)texture[x][y]=imgt[c][x%imgt.w][y%imgt.h]
       pattern = lapfilter(texture)
     }
-    solver.solve(pattern, mask.a, img[c])
+    solver.solve(pattern, { mask: mask.a, out: img[c] })
   })
   document.body.appendChild(colarray2canvas(img))
 }

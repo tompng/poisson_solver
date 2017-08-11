@@ -7,9 +7,9 @@ onload=function(){
   let lap={r: lapfilter(img.r), g: lapfilter(img.g), b: lapfilter(img.b)}
   let solver = new PoissonSolver(img.w,img.h)
   colarraymonotone(img)
-  solver.solve(lap.r, mask.a, img.r)
-  solver.solve(lap.g, mask.a, img.g)
-  solver.solve(lap.b, mask.a, img.b)
+  solver.solve(lap.r, { mask: mask.a, out: img.r })
+  solver.solve(lap.g, { mask: mask.a, out: img.g })
+  solver.solve(lap.b, { mask: mask.a, out: img.b })
   let canvas = colarray2canvas(img)
   document.body.appendChild(canvas)
 }
